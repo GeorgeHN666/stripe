@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/account"
 	"github.com/stripe/stripe-go/v72/accountlink"
@@ -12,7 +14,6 @@ const (
 )
 
 func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
-
 	stripe.Key = SECRET_KEY
 
 	params := &stripe.AccountParams{
@@ -25,11 +26,14 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	fmt.Println("Account ==> ", account.ID)
 
 	link, err := GenerateOnboardingLink(account.ID)
 	if err != nil {
 		return nil, "", err
 	}
+
+	fmt.Println("link", link)
 
 	return account, link.URL, nil
 }
@@ -37,9 +41,9 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 func GenerateOnboardingLink(ID string) (*stripe.AccountLink, error) {
 	linkParam := &stripe.AccountLinkParams{
 		Account:    &ID,
-		RefreshURL: stripe.String("payment-processing://refresh-onboarding"),
-		ReturnURL:  stripe.String("payment-processing://stripe-return"),
-		Type:       stripe.String("aacount_onboarding"),
+		RefreshURL: stripe.String("https://app/refresh-onboarding"),
+		ReturnURL:  stripe.String("https://app/stripe-return"),
+		Type:       stripe.String("account_onboarding"),
 	}
 
 	link, err := accountlink.New(linkParam)
@@ -52,12 +56,27 @@ func GenerateOnboardingLink(ID string) (*stripe.AccountLink, error) {
 
 func GetExpressAccount(ACC_ID string) (*stripe.Account, error) {
 
+	stripe.Key = SECRET_KEY
+
 	params := &stripe.AccountParams{}
 
 	acc, err := account.GetByID(ACC_ID, params)
 	if err != nil {
-		return nil, err
+		return acc, err
 	}
 
 	return acc, nil
+}
+
+func DeleteAcc(ID string) error {
+
+	stripe.Key = SECRET_KEY
+
+	params := &stripe.AccountParams{}
+
+	_, err := account.Del(ID, params)
+	if err != nil {
+		return err
+	}
+	return nil
 }

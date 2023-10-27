@@ -44,20 +44,30 @@ func GetExpressConnectAccount(w http.ResponseWriter, r *http.Request) {
 	var res struct {
 		Error             bool            `json:"error"`
 		Message           string          `json:"message"`
-		Account           *stripe.Account `json:"account"`
-		InfoCompleted     bool            `json:"Info_completed"`
-		CanAcceptPayments bool            `json:"can_accept_payments"`
-		ID                string          `json:"id"`
-		OnBoardingURL     string          `json:"onboarding_url"`
+		Account           *stripe.Account `json:"account,omitempty"`
+		InfoCompleted     bool            `json:"Info_completed,omitempty"`
+		CanAcceptPayments bool            `json:"can_accept_payments,omitempty"`
+		ID                string          `json:"id,omitempty"`
+		OnBoardingURL     string          `json:"onboarding_url,omitempty"`
 	}
 
 	acc, err := GetExpressAccount(r.URL.Query().Get("acc"))
 	if err != nil {
+		fmt.Println("Huston we have a problem")
 		res.Error = true
 		res.Message = err.Error()
 	}
 
-	fmt.Println(acc)
+	// if !acc.DetailsSubmitted {
+	// 	fmt.Println("inside here")
+	// 	link, err := GenerateOnboardingLink(acc.ID)
+	// 	if err != nil {
+	// 		res.Error = true
+	// 		res.Message = err.Error()
+	// 	} else {
+	// 		res.OnBoardingURL = link.URL
+	// 	}
+	// }
 
 	res.Error = false
 	res.Message = "Account successfuly created"
@@ -66,15 +76,21 @@ func GetExpressConnectAccount(w http.ResponseWriter, r *http.Request) {
 	res.CanAcceptPayments = acc.ChargesEnabled
 	res.ID = acc.ID
 
-	if !acc.DetailsSubmitted {
-		link, err := GenerateOnboardingLink(acc.ID)
-		if err != nil {
-			res.Error = true
-			res.Message = err.Error()
-		} else {
-			res.OnBoardingURL = link.URL
-		}
+	WriteJSON(w, r, http.StatusOK, res)
+}
+
+func DelAccount(w http.ResponseWriter, r *http.Request) {
+	var res struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+	}
+
+	err := DeleteAcc(r.URL.Query().Get("acc"))
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
 	}
 
 	WriteJSON(w, r, http.StatusOK, res)
+
 }

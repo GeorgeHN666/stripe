@@ -11,6 +11,7 @@ func HandlerRoutes() http.Handler {
 
 	mux.Get("/express_create", CreateNewExpressAccount)
 	mux.Get("/express_get", GetExpressConnectAccount)
+	mux.Get("/del_acc", DelAccount)
 
 	return mux
 }

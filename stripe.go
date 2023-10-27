@@ -13,6 +13,8 @@ const (
 
 func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 
+	stripe.Key = SECRET_KEY
+
 	params := &stripe.AccountParams{
 		Country: stripe.String("MX"),
 		Type:    stripe.String(string(stripe.AccountTypeExpress)),

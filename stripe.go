@@ -42,7 +42,7 @@ func GenerateOnboardingLink(ID string) (*stripe.AccountLink, error) {
 	linkParam := &stripe.AccountLinkParams{
 		Account:    &ID,
 		RefreshURL: stripe.String("https://app/refresh-onboarding"),
-		ReturnURL:  stripe.String("https://app/stripe-return"),
+		ReturnURL:  stripe.String("https://test.zkaia.com"),
 		Type:       stripe.String("account_onboarding"),
 	}
 

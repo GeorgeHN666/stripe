@@ -39,16 +39,13 @@ func CreateNewExpressAccount(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, r, http.StatusOK, res)
 }
 
-func GetExpressConnectAccount(w http.ResponseWriter, r *http.Request) {
+func ContinueOnboarding(w http.ResponseWriter, r *http.Request) {
 
 	var res struct {
-		Error             bool            `json:"error"`
-		Message           string          `json:"message"`
-		Account           *stripe.Account `json:"account,omitempty"`
-		InfoCompleted     bool            `json:"Info_completed,omitempty"`
-		CanAcceptPayments bool            `json:"can_accept_payments,omitempty"`
-		ID                string          `json:"id,omitempty"`
-		OnBoardingURL     string          `json:"onboarding_url,omitempty"`
+		Error         bool   `json:"error"`
+		Message       string `json:"message"`
+		ID            string `json:"id,omitempty"`
+		OnBoardingURL string `json:"onboarding_url,omitempty"`
 	}
 
 	acc, err := GetExpressAccount(r.URL.Query().Get("acc"))
@@ -58,22 +55,19 @@ func GetExpressConnectAccount(w http.ResponseWriter, r *http.Request) {
 		res.Message = err.Error()
 	}
 
-	// if !acc.DetailsSubmitted {
-	// 	fmt.Println("inside here")
-	// 	link, err := GenerateOnboardingLink(acc.ID)
-	// 	if err != nil {
-	// 		res.Error = true
-	// 		res.Message = err.Error()
-	// 	} else {
-	// 		res.OnBoardingURL = link.URL
-	// 	}
-	// }
+	if !acc.DetailsSubmitted {
+		fmt.Println("inside here")
+		link, err := GenerateOnboardingLink(acc.ID)
+		if err != nil {
+			res.Error = true
+			res.Message = err.Error()
+		} else {
+			res.OnBoardingURL = link.URL
+		}
+	}
 
 	res.Error = false
 	res.Message = "Account successfuly created"
-	res.Account = acc
-	res.InfoCompleted = acc.DetailsSubmitted
-	res.CanAcceptPayments = acc.ChargesEnabled
 	res.ID = acc.ID
 
 	WriteJSON(w, r, http.StatusOK, res)

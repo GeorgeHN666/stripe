@@ -10,7 +10,7 @@ func HandlerRoutes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Get("/express_create", CreateNewExpressAccount)
-	mux.Get("/express_get", GetExpressConnectAccount)
+	mux.Get("/express_get", ContinueOnboarding)
 	mux.Get("/del_acc", DelAccount)
 
 	return mux

@@ -39,8 +39,11 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 }
 
 func GenerateOnboardingLink(ID string) (*stripe.AccountLink, error) {
+
+	stripe.Key = SECRET_KEY
+
 	linkParam := &stripe.AccountLinkParams{
-		Account:    &ID,
+		Account:    stripe.String(ID),
 		RefreshURL: stripe.String("https://app/refresh-onboarding"),
 		ReturnURL:  stripe.String("https://test.zkaia.com"),
 		Type:       stripe.String("account_onboarding"),

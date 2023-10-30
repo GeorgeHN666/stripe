@@ -44,31 +44,20 @@ func ContinueOnboarding(w http.ResponseWriter, r *http.Request) {
 	var res struct {
 		Error         bool   `json:"error"`
 		Message       string `json:"message"`
-		ID            string `json:"id,omitempty"`
-		OnBoardingURL string `json:"onboarding_url,omitempty"`
+		ID            string `json:"id"`
+		OnBoardingURL string `json:"onboarding_url"`
 	}
 
-	acc, err := GetExpressAccount(r.URL.Query().Get("acc"))
+	link, err := GenerateOnboardingLink(r.URL.Query().Get("acc"))
 	if err != nil {
-		fmt.Println("Huston we have a problem")
 		res.Error = true
 		res.Message = err.Error()
-	}
-
-	if !acc.DetailsSubmitted {
-		fmt.Println("inside here")
-		link, err := GenerateOnboardingLink(acc.ID)
-		if err != nil {
-			res.Error = true
-			res.Message = err.Error()
-		} else {
-			res.OnBoardingURL = link.URL
-		}
+	} else {
+		res.OnBoardingURL = link.URL
 	}
 
 	res.Error = false
 	res.Message = "Account successfuly created"
-	res.ID = acc.ID
 
 	WriteJSON(w, r, http.StatusOK, res)
 }

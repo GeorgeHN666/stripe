@@ -77,3 +77,25 @@ func DelAccount(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, r, http.StatusOK, res)
 
 }
+
+func GetSetupIntent(w http.ResponseWriter, r *http.Request) {
+	var res struct {
+		Error          bool   `json:"error"`
+		Message        string `json:"message"`
+		EphemeralKey   string `json:"ephemeral_key"`
+		SetupIntentKey string `json:"setup_intent_key"`
+		Customer       string `json:"customer_id"`
+	}
+
+	customer, ephe, setup, err := CreateStripePaymentSubscription(r.URL.Query().Get("acc"))
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
+	} else {
+		res.EphemeralKey = ephe.ID
+		res.SetupIntentKey = setup.ClientSecret
+		res.Customer = customer.ID
+	}
+
+	WriteJSON(w, r, http.StatusOK, res)
+}

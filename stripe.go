@@ -6,11 +6,16 @@ import (
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/account"
 	"github.com/stripe/stripe-go/v72/accountlink"
+	"github.com/stripe/stripe-go/v72/customer"
+	"github.com/stripe/stripe-go/v72/ephemeralkey"
+	"github.com/stripe/stripe-go/v72/paymentintent"
+	"github.com/stripe/stripe-go/v72/setupintent"
 )
 
 const (
 	SECRET_KEY = "sk_test_51O3wTiAml2Q20zJkhLIxBur3CAuMCZOdLlaHLK7zcXckKiYNmOXcH9oM4dr2hbsG5El0YqVqoymiINCxcaU3O5Kt00SDKCix4t"
 	PUB_KEY    = "pk_test_51O3wTiAml2Q20zJkuxWMb6NtjKwq1DcxVBO8g0lPFvfd3vqMGuvQjU3aqGJbqvvatgl81TLDHCt62bqvEw8LjZz300UMlW0SJe"
+	ELEVNT_FEE = 0.3
 )
 
 func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
@@ -82,4 +87,69 @@ func DeleteAcc(ID string) error {
 		return err
 	}
 	return nil
+}
+
+func CreatePaymenIntentWithFee(Amount int64, ACCID string) (*stripe.PaymentIntent, error) {
+
+	stripe.Key = SECRET_KEY
+
+	AmountLessFee := float64(Amount) * ELEVNT_FEE
+
+	params := &stripe.PaymentIntentParams{
+		Amount:               stripe.Int64(Amount),
+		Currency:             stripe.String(string(stripe.CurrencyMXN)),
+		ApplicationFeeAmount: stripe.Int64(int64(AmountLessFee)),
+		TransferData: &stripe.PaymentIntentTransferDataParams{
+			Destination: stripe.String(ACCID),
+		},
+	}
+
+	res, err := paymentintent.New(params)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func CreatePaymenIntentWithoutFee() {
+
+}
+
+func CreateStripePaymentSubscription(Email string) (*stripe.Customer, *stripe.EphemeralKey, *stripe.SetupIntent, error) {
+
+	stripe.Key = SECRET_KEY
+
+	customerParams := &stripe.CustomerParams{
+		Email: stripe.String(Email),
+	}
+
+	customer, err := customer.New(customerParams)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	ephiparams := &stripe.EphemeralKeyParams{
+		Customer:      stripe.String(customer.ID),
+		StripeVersion: stripe.String("2023-10-16"),
+	}
+
+	ephe, err := ephemeralkey.New(ephiparams)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	types := []*string{stripe.String("card")}
+
+	param := &stripe.SetupIntentParams{
+		Customer:           stripe.String(customer.ID),
+		PaymentMethodTypes: types,
+	}
+
+	setupIntent, err := setupintent.New(param)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return customer, ephe, setupIntent, nil
 }

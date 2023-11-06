@@ -163,7 +163,7 @@ func CreateRefundIntentEP(w http.ResponseWriter, r *http.Request) {
 		Payment *stripe.Refund `json:"refund"`
 	}
 
-	pi, err := CreateRefundIntent(r.URL.Query().Get("pi"))
+	pi, err := CreateRefundIntent(r.URL.Query().Get("pi"), r.URL.Query().Get("acc"), r.URL.Query().Get("cus"))
 	if err != nil {
 		res.Error = true
 		res.Message = err.Error()

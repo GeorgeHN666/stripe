@@ -31,7 +31,7 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 			Payouts: &stripe.AccountSettingsPayoutsParams{
 				DebitNegativeBalances: stripe.Bool(true),
 				Schedule: &stripe.PayoutScheduleParams{
-					DelayDays: stripe.Int64(1),
+					DelayDays: stripe.Int64(5),
 				},
 			},
 		},
@@ -120,15 +120,16 @@ func CreatePaymenIntentWithFee(Amount int64, ACCID, CusID string) (*stripe.Payme
 	AmountLessFee := float64(Amount) * ELEVNT_FEE
 
 	params := &stripe.PaymentIntentParams{
-		Amount:               stripe.Int64(Amount),
-		Currency:             stripe.String(string(stripe.CurrencyMXN)),
-		Customer:             stripe.String(CusID),
+		Amount:   stripe.Int64(Amount),
+		Currency: stripe.String(string(stripe.CurrencyMXN)),
+		Customer: stripe.String(CusID),
+
 		ApplicationFeeAmount: stripe.Int64(int64(AmountLessFee)),
 		TransferData: &stripe.PaymentIntentTransferDataParams{
 			Destination: stripe.String(ACCID),
 		},
-		OnBehalfOf: stripe.String(ACCID),
-		Confirm:    stripe.Bool(true),
+
+		Confirm: stripe.Bool(true),
 	}
 
 	res, err := paymentintent.New(params)
@@ -210,13 +211,16 @@ func CreateStripePaymentSubscriptionWithAccount(CUSTID string) (*stripe.Ephemera
 	return ephe, setupIntent, nil
 }
 
-func CreateRefundIntent(piID string) (*stripe.Refund, error) {
+func CreateRefundIntent(piID, Acc, cus string) (*stripe.Refund, error) {
 
 	stripe.Key = SECRET_KEY
 
 	refundParams := &stripe.RefundParams{
 		PaymentIntent: stripe.String(piID),
+		Customer:      stripe.String(cus),
 	}
+
+	refundParams.SetStripeAccount(Acc)
 
 	return refund.New(refundParams)
 

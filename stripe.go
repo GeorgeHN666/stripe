@@ -214,7 +214,7 @@ func CreateRefundIntent(piID string) (*stripe.PaymentIntent, error) {
 	stripe.Key = SECRET_KEY
 
 	refundParams := &stripe.PaymentIntentCancelParams{
-		CancellationReason: stripe.String("requeste_by_customer"),
+		CancellationReason: stripe.String("requested_by_customer"),
 	}
 
 	return paymentintent.Cancel(piID, refundParams)

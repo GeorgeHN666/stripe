@@ -15,6 +15,7 @@ func HandlerRoutes() http.Handler {
 	mux.Get("/setup_payment", GetSetupIntent)
 	mux.Get("/buy", BuyWithFee)
 	mux.Get("/simple", SimplePI)
+	mux.Get("/refund", CreateRefundIntentEP)
 
 	// operational
 	mux.Get("/items", GetItems)

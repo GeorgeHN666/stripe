@@ -117,6 +117,18 @@ func BuyWithFee(w http.ResponseWriter, r *http.Request) {
 		res.Message = err.Error()
 	}
 
+	pi := &PaymentIntent{
+		PaymentIntentID: PI.ID,
+		ItemID:          r.URL.Query().Get("item"),
+		Amount:          int64(amount),
+	}
+
+	err = StartDB().CreatePaymentIntent(pi)
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
+	}
+
 	res.Payment = PI
 
 	WriteJSON(w, r, http.StatusOK, res)
@@ -141,4 +153,23 @@ func SimplePI(w http.ResponseWriter, r *http.Request) {
 	res.Payment = PI
 
 	WriteJSON(w, r, http.StatusOK, res)
+}
+
+func CreateRefundIntentEP(w http.ResponseWriter, r *http.Request) {
+
+	var res struct {
+		Error   bool                  `json:"error"`
+		Message string                `json:"message"`
+		Payment *stripe.PaymentIntent `json:"payment"`
+	}
+
+	pi, err := CreateRefundIntent(r.URL.Query().Get("pi"))
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
+	}
+
+	res.Payment = pi
+	WriteJSON(w, r, http.StatusOK, res)
+
 }

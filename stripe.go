@@ -208,3 +208,15 @@ func CreateStripePaymentSubscriptionWithAccount(CUSTID string) (*stripe.Ephemera
 
 	return ephe, setupIntent, nil
 }
+
+func CreateRefundIntent(piID string) (*stripe.PaymentIntent, error) {
+
+	stripe.Key = SECRET_KEY
+
+	refundParams := &stripe.PaymentIntentCancelParams{
+		CancellationReason: stripe.String("requeste_by_customer"),
+	}
+
+	return paymentintent.Cancel(piID, refundParams)
+
+}

@@ -25,6 +25,15 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 		Country: stripe.String("MX"),
 		Type:    stripe.String(string(stripe.AccountTypeExpress)),
 		Email:   &Email,
+
+		Settings: &stripe.AccountSettingsParams{
+			Payouts: &stripe.AccountSettingsPayoutsParams{
+				DebitNegativeBalances: stripe.Bool(true),
+				Schedule: &stripe.PayoutScheduleParams{
+					DelayDays: stripe.Int64(1),
+				},
+			},
+		},
 	}
 
 	account, err := account.New(params)
@@ -89,7 +98,21 @@ func DeleteAcc(ID string) error {
 	return nil
 }
 
-func CreatePaymenIntentWithFee(Amount int64, ACCID string) (*stripe.PaymentIntent, error) {
+func SimplePaymentIntent(amount int) (*stripe.PaymentIntent, error) {
+
+	stripe.Key = SECRET_KEY
+
+	params := &stripe.PaymentIntentParams{
+		Amount:   stripe.Int64(int64(amount)),
+		Currency: stripe.String(string(stripe.CurrencyMXN)),
+		Customer: stripe.String("cus_Ow74WiNu6ozwJL"),
+		Confirm:  stripe.Bool(true),
+	}
+
+	return paymentintent.New(params)
+}
+
+func CreatePaymenIntentWithFee(Amount int64, ACCID, CusID string) (*stripe.PaymentIntent, error) {
 
 	stripe.Key = SECRET_KEY
 
@@ -98,10 +121,13 @@ func CreatePaymenIntentWithFee(Amount int64, ACCID string) (*stripe.PaymentInten
 	params := &stripe.PaymentIntentParams{
 		Amount:               stripe.Int64(Amount),
 		Currency:             stripe.String(string(stripe.CurrencyMXN)),
+		Customer:             stripe.String(CusID),
 		ApplicationFeeAmount: stripe.Int64(int64(AmountLessFee)),
 		TransferData: &stripe.PaymentIntentTransferDataParams{
 			Destination: stripe.String(ACCID),
 		},
+		OnBehalfOf: stripe.String(ACCID),
+		Confirm:    stripe.Bool(true),
 	}
 
 	res, err := paymentintent.New(params)
@@ -152,4 +178,33 @@ func CreateStripePaymentSubscription(Email string) (*stripe.Customer, *stripe.Ep
 	}
 
 	return customer, ephe, setupIntent, nil
+}
+
+func CreateStripePaymentSubscriptionWithAccount(CUSTID string) (*stripe.EphemeralKey, *stripe.SetupIntent, error) {
+
+	stripe.Key = SECRET_KEY
+
+	ephiparams := &stripe.EphemeralKeyParams{
+		Customer:      stripe.String(CUSTID),
+		StripeVersion: stripe.String("2023-10-16"),
+	}
+
+	ephe, err := ephemeralkey.New(ephiparams)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	types := []*string{stripe.String("card")}
+
+	param := &stripe.SetupIntentParams{
+		Customer:           stripe.String(CUSTID),
+		PaymentMethodTypes: types,
+	}
+
+	setupIntent, err := setupintent.New(param)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return ephe, setupIntent, nil
 }

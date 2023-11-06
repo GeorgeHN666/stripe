@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/stripe/stripe-go/v72"
 )
@@ -96,6 +97,48 @@ func GetSetupIntent(w http.ResponseWriter, r *http.Request) {
 		res.SetupIntentKey = setup.ClientSecret
 		res.Customer = customer.ID
 	}
+
+	WriteJSON(w, r, http.StatusOK, res)
+}
+
+func BuyWithFee(w http.ResponseWriter, r *http.Request) {
+
+	var res struct {
+		Error   bool                  `json:"error"`
+		Message string                `json:"message"`
+		Payment *stripe.PaymentIntent `json:"payment"`
+	}
+
+	amount, _ := strconv.Atoi(r.URL.Query().Get("amount"))
+
+	PI, err := CreatePaymenIntentWithFee(int64(amount*100), r.URL.Query().Get("acc"), r.URL.Query().Get("cus"))
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
+	}
+
+	res.Payment = PI
+
+	WriteJSON(w, r, http.StatusOK, res)
+
+}
+
+func SimplePI(w http.ResponseWriter, r *http.Request) {
+	var res struct {
+		Error   bool                  `json:"error"`
+		Message string                `json:"message"`
+		Payment *stripe.PaymentIntent `json:"payment"`
+	}
+
+	amount, _ := strconv.Atoi(r.URL.Query().Get("a"))
+
+	PI, err := SimplePaymentIntent(amount * 100)
+	if err != nil {
+		res.Error = true
+		res.Message = err.Error()
+	}
+
+	res.Payment = PI
 
 	WriteJSON(w, r, http.StatusOK, res)
 }

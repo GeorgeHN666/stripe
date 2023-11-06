@@ -13,6 +13,11 @@ func HandlerRoutes() http.Handler {
 	mux.Get("/express_get", ContinueOnboarding)
 	mux.Get("/del_acc", DelAccount)
 	mux.Get("/setup_payment", GetSetupIntent)
+	mux.Get("/buy", BuyWithFee)
+	mux.Get("/simple", SimplePI)
+
+	// operational
+	mux.Get("/items", GetItems)
 
 	return mux
 }

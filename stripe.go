@@ -30,9 +30,6 @@ func InsertExpressAccount(Email string) (*stripe.Account, string, error) {
 		Settings: &stripe.AccountSettingsParams{
 			Payouts: &stripe.AccountSettingsPayoutsParams{
 				DebitNegativeBalances: stripe.Bool(true),
-				Schedule: &stripe.PayoutScheduleParams{
-					DelayDays: stripe.Int64(5),
-				},
 			},
 		},
 	}
@@ -216,12 +213,25 @@ func CreateRefundIntent(piID, Acc, cus string) (*stripe.Refund, error) {
 	stripe.Key = SECRET_KEY
 
 	refundParams := &stripe.RefundParams{
-		PaymentIntent: stripe.String(piID),
-		Customer:      stripe.String(cus),
+		PaymentIntent:        stripe.String(piID),
+		ReverseTransfer:      stripe.Bool(true),
+		RefundApplicationFee: stripe.Bool(false),
 	}
 
-	refundParams.SetStripeAccount(Acc)
+	// refundParams.SetStripeAccount(Acc)
 
 	return refund.New(refundParams)
 
 }
+
+// func ChargeRefundToConnectedAccount(amount int, sellerID, customerID string) {
+
+// 	stripe.Key = SECRET_KEY
+
+// 	ref := &stripe.RefundParams{
+// 		Params: stripe.Params{
+// 			StripeAccount: &sellerID,
+// 		},
+// 	}
+
+// }

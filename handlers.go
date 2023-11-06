@@ -158,9 +158,9 @@ func SimplePI(w http.ResponseWriter, r *http.Request) {
 func CreateRefundIntentEP(w http.ResponseWriter, r *http.Request) {
 
 	var res struct {
-		Error   bool                  `json:"error"`
-		Message string                `json:"message"`
-		Payment *stripe.PaymentIntent `json:"payment"`
+		Error   bool           `json:"error"`
+		Message string         `json:"message"`
+		Payment *stripe.Refund `json:"refund"`
 	}
 
 	pi, err := CreateRefundIntent(r.URL.Query().Get("pi"))

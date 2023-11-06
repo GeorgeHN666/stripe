@@ -9,6 +9,7 @@ import (
 	"github.com/stripe/stripe-go/v72/customer"
 	"github.com/stripe/stripe-go/v72/ephemeralkey"
 	"github.com/stripe/stripe-go/v72/paymentintent"
+	"github.com/stripe/stripe-go/v72/refund"
 	"github.com/stripe/stripe-go/v72/setupintent"
 )
 
@@ -209,14 +210,14 @@ func CreateStripePaymentSubscriptionWithAccount(CUSTID string) (*stripe.Ephemera
 	return ephe, setupIntent, nil
 }
 
-func CreateRefundIntent(piID string) (*stripe.PaymentIntent, error) {
+func CreateRefundIntent(piID string) (*stripe.Refund, error) {
 
 	stripe.Key = SECRET_KEY
 
-	refundParams := &stripe.PaymentIntentCancelParams{
-		CancellationReason: stripe.String("requested_by_customer"),
+	refundParams := &stripe.RefundParams{
+		PaymentIntent: stripe.String(piID),
 	}
 
-	return paymentintent.Cancel(piID, refundParams)
+	return refund.New(refundParams)
 
 }
